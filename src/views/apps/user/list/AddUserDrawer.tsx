@@ -19,6 +19,7 @@ import { useForm, Controller } from 'react-hook-form'
 
 // Types Imports
 import type { UsersType } from '@/types/apps/userTypes'
+import bcrypt from 'bcrypt'
 
 type Props = {
   open: boolean
@@ -28,12 +29,13 @@ type Props = {
 }
 
 type FormValidateType = {
-  fullName: string
+  name: string
   username: string
   email: string
   role: string
   plan: string
   status: string
+  password: string
 }
 
 type FormNonValidateType = {
@@ -64,34 +66,50 @@ const AddUserDrawer = (props: Props) => {
     formState: { errors }
   } = useForm<FormValidateType>({
     defaultValues: {
-      fullName: '',
+      name: '',
       username: '',
       email: '',
       role: '',
       plan: '',
-      status: ''
+      status: '',
+      password: ''
     }
   })
-
-  const onSubmit = (data: FormValidateType) => {
+  const addUser = async (data: FormValidateType) => {
     const newUser: UsersType = {
-      id: (userData?.length && userData?.length + 1) || 1,
       avatar: `/images/avatars/${Math.floor(Math.random() * 8) + 1}.png`,
-      fullName: data.fullName,
+      name: data.name,
       username: data.username,
       email: data.email,
       role: data.role,
-      currentPlan: data.plan,
+      currentplan: data.currentplan,
       status: data.status,
       company: formData.company,
       country: formData.country,
-      contact: formData.contact
+      contact: formData.contact,
+      password: data.password
+    }
+    try {
+      const response = await fetch('/api/user-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      console.log('User added:', data)
+    } catch (error) {
+      console.error('Error adding user:', error)
     }
 
     setData([...(userData ?? []), newUser])
     handleClose()
     setFormData(initialData)
-    resetForm({ fullName: '', username: '', email: '', role: '', plan: '', status: '' })
+    resetForm({ name: '', username: '', email: '', role: '', currentplan: '', status: '', password: '' })
+  }
+  const onSubmit = (data: FormValidateType) => {
+    addUser(data)
   }
 
   const handleReset = () => {
@@ -118,7 +136,7 @@ const AddUserDrawer = (props: Props) => {
       <div className='p-5'>
         <form onSubmit={handleSubmit(data => onSubmit(data))} className='flex flex-col gap-5'>
           <Controller
-            name='fullName'
+            name='name'
             control={control}
             rules={{ required: true }}
             render={({ field }) => (
@@ -127,7 +145,7 @@ const AddUserDrawer = (props: Props) => {
                 fullWidth
                 label='Full Name'
                 placeholder='John Doe'
-                {...(errors.fullName && { error: true, helperText: 'This field is required.' })}
+                {...(errors.name && { error: true, helperText: 'This field is required.' })}
               />
             )}
           />
@@ -160,6 +178,20 @@ const AddUserDrawer = (props: Props) => {
               />
             )}
           />
+          <Controller
+            name='password'
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                label='Password'
+                placeholder='Type password'
+                {...(errors.password && { error: true, helperText: 'This field is required.' })}
+              />
+            )}
+          />
           <FormControl fullWidth>
             <InputLabel id='country' error={Boolean(errors.role)}>
               Select Role
@@ -189,7 +221,7 @@ const AddUserDrawer = (props: Props) => {
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <Select label='Select Plan' {...field} error={Boolean(errors.plan)}>
+                <Select label='Select Plan' {...field} error={Boolean(errors.currentplan)}>
                   <MenuItem value='basic'>Basic</MenuItem>
                   <MenuItem value='company'>Company</MenuItem>
                   <MenuItem value='enterprise'>Enterprise</MenuItem>

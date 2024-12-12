@@ -21,7 +21,7 @@ type ConfirmationDialogProps = {
   type: ConfirmationType
 }
 
-const ConfirmationDialog = ({ open, setOpen, type }: ConfirmationDialogProps) => {
+const ConfirmationDialog = ({ open, setOpen, type, userID }: ConfirmationDialogProps) => {
   // States
   const [secondDialog, setSecondDialog] = useState(false)
   const [userInput, setUserInput] = useState(false)
@@ -34,8 +34,30 @@ const ConfirmationDialog = ({ open, setOpen, type }: ConfirmationDialogProps) =>
     setOpen(false)
   }
 
-  const handleConfirmation = (value: boolean) => {
+  const handleConfirmation = async (value: boolean) => {
     setUserInput(value)
+
+    if (value && type === 'suspend-account') {
+      try {
+        const response = await fetch('/api/user-list', {
+          method: 'PUT', // Assuming you're using POST for updates
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: userID, suspend: 'true' }) // Send the user's ID and new status
+        })
+
+        if (response.ok) {
+          console.log('User suspended successfully')
+          // Optionally trigger a refresh of user data or notify parent component
+        } else {
+          console.error('Failed to suspend user:', response.statusText)
+        }
+      } catch (error) {
+        console.error('Error suspending user:', error)
+      }
+    }
+
     setSecondDialog(true)
     setOpen(false)
   }

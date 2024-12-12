@@ -148,10 +148,11 @@ const UserListTable = ({ tableData }: { tableData?: UsersType[] }) => {
   const [data, setData] = useState(...[tableData])
   const [filteredData, setFilteredData] = useState(data)
   const [globalFilter, setGlobalFilter] = useState('')
-
   // Hooks
+  useEffect(() => {
+    setData(tableData)
+  }, [tableData])
   const { lang: locale } = useParams()
-
   const columns = useMemo<ColumnDef<UsersTypeWithAction, any>[]>(
     () => [
       {
@@ -176,14 +177,14 @@ const UserListTable = ({ tableData }: { tableData?: UsersType[] }) => {
           />
         )
       },
-      columnHelper.accessor('fullName', {
+      columnHelper.accessor('name', {
         header: 'User',
         cell: ({ row }) => (
           <div className='flex items-center gap-4'>
-            {getAvatar({ avatar: row.original.avatar, fullName: row.original.fullName })}
+            {getAvatar({ avatar: row.original.avatar, name: row.original.name })}
             <div className='flex flex-col'>
               <Typography className='font-medium' color='text.primary'>
-                {row.original.fullName}
+                {row.original.name}
               </Typography>
               <Typography variant='body2'>{row.original.username}</Typography>
             </div>
@@ -198,21 +199,21 @@ const UserListTable = ({ tableData }: { tableData?: UsersType[] }) => {
         header: 'Role',
         cell: ({ row }) => (
           <div className='flex items-center gap-2'>
-            <Icon
+            {/* <Icon
               className={userRoleObj[row.original.role].icon}
               sx={{ color: `var(--mui-palette-${userRoleObj[row.original.role].color}-main)`, fontSize: '1.375rem' }}
-            />
+            /> */}
             <Typography className='capitalize' color='text.primary'>
               {row.original.role}
             </Typography>
           </div>
         )
       }),
-      columnHelper.accessor('currentPlan', {
+      columnHelper.accessor('currentplan', {
         header: 'Plan',
         cell: ({ row }) => (
           <Typography className='capitalize' color='text.primary'>
-            {row.original.currentPlan}
+            {row.original.currentplan}
           </Typography>
         )
       }),
@@ -234,11 +235,15 @@ const UserListTable = ({ tableData }: { tableData?: UsersType[] }) => {
         header: 'Action',
         cell: ({ row }) => (
           <div className='flex items-center'>
-            <IconButton onClick={() => setData(data?.filter(product => product.id !== row.original.id))}>
+            <IconButton
+              onClick={() => {
+                setData(data?.filter(product => product.id !== row.original.id))
+              }}
+            >
               <i className='ri-delete-bin-7-line text-textSecondary' />
             </IconButton>
             <IconButton>
-              <Link href={getLocalizedUrl('/apps/user/view', locale as Locale)} className='flex'>
+              <Link href={getLocalizedUrl(`/apps/user/view?id=${row.original.id}`, locale as Locale)} className='flex'>
                 <i className='ri-eye-line text-textSecondary' />
               </Link>
             </IconButton>
@@ -296,15 +301,15 @@ const UserListTable = ({ tableData }: { tableData?: UsersType[] }) => {
     getFacetedMinMaxValues: getFacetedMinMaxValues()
   })
 
-  const getAvatar = (params: Pick<UsersType, 'avatar' | 'fullName'>) => {
-    const { avatar, fullName } = params
+  const getAvatar = (params: Pick<UsersType, 'avatar' | 'name'>) => {
+    const { avatar, name } = params
 
     if (avatar) {
       return <CustomAvatar src={avatar} skin='light' size={34} />
     } else {
       return (
         <CustomAvatar skin='light' size={34}>
-          {getInitials(fullName as string)}
+          {getInitials(name as string)}
         </CustomAvatar>
       )
     }
@@ -381,7 +386,7 @@ const UserListTable = ({ tableData }: { tableData?: UsersType[] }) => {
                   .rows.slice(0, table.getState().pagination.pageSize)
                   .map(row => {
                     return (
-                      <tr key={row.id} className={classnames({ selected: row.getIsSelected() })}>
+                      <tr key={row.id} className={classnames({ 'bg-[#5553634d]': row.original.suspend === 'true' })}>
                         {row.getVisibleCells().map(cell => (
                           <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
                         ))}

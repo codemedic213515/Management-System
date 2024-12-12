@@ -135,8 +135,8 @@ const FormLayoutsCollapsible = () => {
                 fullWidth
                 label='Full Name'
                 placeholder='John Doe'
-                value={cardData.fullName}
-                onChange={e => setCardData({ ...cardData, fullName: e.target.value })}
+                value={cardData.name}
+                onChange={e => setCardData({ ...cardData, name: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>

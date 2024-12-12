@@ -209,11 +209,11 @@ const RolesTable = ({ tableData }: { tableData?: UsersType[] }) => {
           </div>
         )
       }),
-      columnHelper.accessor('currentPlan', {
+      columnHelper.accessor('currentplan', {
         header: 'Plan',
         cell: ({ row }) => (
           <Typography className='capitalize' color='text.primary'>
-            {row.original.currentPlan}
+            {row.original.currentplan}
           </Typography>
         )
       }),

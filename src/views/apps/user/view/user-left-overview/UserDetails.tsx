@@ -1,4 +1,4 @@
-// MUI Imports
+'use client'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
@@ -15,23 +15,56 @@ import EditUserInfo from '@components/dialogs/edit-user-info'
 import ConfirmationDialog from '@components/dialogs/confirmation-dialog'
 import OpenDialogOnElementClick from '@components/dialogs/OpenDialogOnElementClick'
 import CustomAvatar from '@core/components/mui/Avatar'
+import { useSession } from 'next-auth/react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 // Vars
-const userData = {
-  firstName: 'Seth',
-  lastName: 'Hallam',
-  userName: '@shallamb',
-  billingEmail: 'shallamb@gmail.com',
-  status: 'active',
-  role: 'Subscriber',
-  taxId: 'Tax-8894',
-  contact: '+1 (234) 464-0600',
-  language: ['English'],
-  country: 'France',
-  useAsBillingAddress: true
-}
 
 const UserDetails = () => {
+  const searchParams = useSearchParams() // Get search params
+  const id = searchParams.get('id') // Retrieve the 'id' parameter
+  const { data: session, status } = useSession()
+  const [userData, setUserData] = useState(null)
+  useEffect(() => {
+    const fetchData = async () => {
+      if (id) {
+        try {
+          const response = await fetch(`/api/user-list?id=${id}`)
+          if (response.ok) {
+            const data = await response.json()
+            setUserData(data)
+          } else {
+            console.error('Failed to fetch user data:', response.statusText)
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+        }
+      } else if (session?.user?.id) {
+        try {
+          const response = await fetch(`/api/user-list?id=${session.user.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            setUserData(data)
+          } else {
+            console.error('Failed to fetch user data:', response.statusText)
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error)
+        }
+      }
+    }
+
+    fetchData()
+  }, [session, id])
+
+  if (status === 'loading') {
+    return <p>Loading...</p>
+  }
+
+  if (!userData) {
+    return <p>No user data found.</p>
+  }
   const buttonProps = (children: string, color: ThemeColor, variant: ButtonProps['variant']): ButtonProps => ({
     children,
     color,
@@ -46,7 +79,7 @@ const UserDetails = () => {
             <div className='flex items-center justify-center flex-col gap-4'>
               <div className='flex flex-col items-center gap-4'>
                 <CustomAvatar alt='user-profile' src='/images/avatars/1.png' variant='rounded' size={120} />
-                <Typography variant='h5'>{`${userData.firstName} ${userData.lastName}`}</Typography>
+                <Typography variant='h5'>{`${userData.username} `}</Typography>
               </div>
               <Chip label='Subscriber' color='error' size='small' variant='tonal' />
             </div>
@@ -79,13 +112,13 @@ const UserDetails = () => {
                 <Typography className='font-medium' color='text.primary'>
                   Username:
                 </Typography>
-                <Typography>{userData.userName}</Typography>
+                <Typography>{userData.name}</Typography>
               </div>
               <div className='flex items-center flex-wrap gap-x-1.5'>
                 <Typography className='font-medium' color='text.primary'>
                   Billing Email:
                 </Typography>
-                <Typography>{userData.billingEmail}</Typography>
+                <Typography>{userData.email}</Typography>
               </div>
               <div className='flex items-center flex-wrap gap-x-1.5'>
                 <Typography className='font-medium' color='text.primary'>
@@ -103,7 +136,7 @@ const UserDetails = () => {
                 <Typography className='font-medium' color='text.primary'>
                   Tax ID:
                 </Typography>
-                <Typography color='text.primary'>{userData.taxId}</Typography>
+                <Typography color='text.primary'>{userData.taxID}</Typography>
               </div>
               <div className='flex items-center flex-wrap gap-x-1.5'>
                 <Typography className='font-medium' color='text.primary'>
@@ -136,7 +169,7 @@ const UserDetails = () => {
               element={Button}
               elementProps={buttonProps('Suspend', 'error', 'outlined')}
               dialog={ConfirmationDialog}
-              dialogProps={{ type: 'suspend-account' }}
+              dialogProps={{ type: 'suspend-account', userID: userData.id }}
             />
           </div>
         </CardContent>

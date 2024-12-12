@@ -27,7 +27,7 @@ const columns = [
     cell: info => info.getValue(),
     header: 'ID'
   }),
-  columnHelper.accessor('fullName', {
+  columnHelper.accessor('name', {
     cell: info => info.getValue(),
     header: 'Name'
   }),
