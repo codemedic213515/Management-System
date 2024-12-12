@@ -44,7 +44,6 @@ import { useSettings } from '@core/hooks/useSettings'
 
 // Util Imports
 import { getLocalizedUrl } from '@/utils/i18n'
-
 type ErrorType = {
   message: string[]
 }
@@ -86,8 +85,8 @@ const Login = ({ mode }: { mode: Mode }) => {
   } = useForm<FormData>({
     resolver: valibotResolver(schema),
     defaultValues: {
-      email: 'admin@materio.com',
-      password: 'admin'
+      email: 'admin@gmail.com',
+      password: '123456789'
     }
   })
 
@@ -103,7 +102,8 @@ const Login = ({ mode }: { mode: Mode }) => {
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
-  const onSubmit: SubmitHandler<FormData> = async (data: FormData) => {
+  const onSubmit: SubmitHandler<FormData> = async (data: FormData, event) => {
+    event.preventDefault()
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
@@ -117,9 +117,9 @@ const Login = ({ mode }: { mode: Mode }) => {
       router.replace(getLocalizedUrl(redirectURL, locale as Locale))
     } else {
       if (res?.error) {
-        const error = JSON.parse(res.error)
-
-        setErrorState(error)
+        const error = res?.error
+        console.log(error)
+        // setErrorState(error)
       }
     }
   }

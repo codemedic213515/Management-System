@@ -15,13 +15,13 @@ import type { UsersType } from '@/types/apps/userTypes'
 const TableFilters = ({ setData, tableData }: { setData: (data: UsersType[]) => void; tableData?: UsersType[] }) => {
   // States
   const [role, setRole] = useState<UsersType['role']>('')
-  const [plan, setPlan] = useState<UsersType['currentPlan']>('')
+  const [plan, setPlan] = useState<UsersType['currentplan']>('')
   const [status, setStatus] = useState<UsersType['status']>('')
 
   useEffect(() => {
     const filteredData = tableData?.filter(user => {
       if (role && user.role !== role) return false
-      if (plan && user.currentPlan !== plan) return false
+      if (plan && user.currentplan !== plan) return false
       if (status && user.status !== status) return false
 
       return true

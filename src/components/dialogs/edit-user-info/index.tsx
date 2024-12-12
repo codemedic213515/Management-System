@@ -41,18 +41,6 @@ type EditUserInfoProps = {
 }
 
 // Vars
-const initialData: EditUserInfoProps['data'] = {
-  firstName: 'Oliver',
-  lastName: 'Queen',
-  userName: 'oliverQueen',
-  billingEmail: 'oliverQueen@gmail.com',
-  status: 'status',
-  taxId: 'Tax-8894',
-  contact: '+ 1 609 933 4422',
-  language: ['english'],
-  country: 'US',
-  useAsBillingAddress: true
-}
 
 const status = ['Status', 'Active', 'Inactive', 'Suspended']
 
@@ -62,11 +50,38 @@ const countries = ['Select Country', 'France', 'Russia', 'China', 'UK', 'US']
 
 const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
   // States
-  const [userData, setUserData] = useState<EditUserInfoProps['data']>(data || initialData)
+  const [userData, setUserData] = useState<EditUserInfoProps['data']>(data)
 
   const handleClose = () => {
     setOpen(false)
-    setUserData(data || initialData)
+    setUserData(data)
+  }
+
+  // Example of handleSubmit function in EditUserInfo component
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!userData || !userData.id) return // Ensure userData and ID are available
+
+    console.log(userData)
+    try {
+      const response = await fetch('/api/user-list', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData) // Send user data including ID
+      })
+      console.log('bb')
+      if (response.ok) {
+        console.log('User updated successfully')
+        setOpen(false) // Close dialog on success
+      } else {
+        console.error('Failed to update user:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error updating user:', error)
+    }
   }
 
   return (
@@ -77,7 +92,7 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
           Updating user details will receive a privacy audit.
         </Typography>
       </DialogTitle>
-      <form onSubmit={e => e.preventDefault()}>
+      <form onSubmit={handleSubmit}>
         <DialogContent className='overflow-visible pbs-0 sm:pli-16'>
           <IconButton onClick={handleClose} className='absolute block-start-4 inline-end-4'>
             <i className='ri-close-line text-textSecondary' />
@@ -88,26 +103,26 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
                 fullWidth
                 label='First Name'
                 placeholder='John'
-                value={userData?.firstName}
-                onChange={e => setUserData({ ...userData, firstName: e.target.value })}
+                value={userData?.name}
+                onChange={e => setUserData({ ...userData, name: e.target.value })}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label='Last Name'
                 placeholder='Doe'
-                value={userData?.lastName}
+                value={userData?.username}
                 onChange={e => setUserData({ ...userData, lastName: e.target.value })}
               />
-            </Grid>
+            </Grid> */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label='User Name'
                 placeholder='JohnDoe'
-                value={userData?.userName}
-                onChange={e => setUserData({ ...userData, userName: e.target.value })}
+                value={userData?.username}
+                onChange={e => setUserData({ ...userData, username: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -115,8 +130,8 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
                 fullWidth
                 label='Billing Email'
                 placeholder='johnDoe@email.com'
-                value={userData?.billingEmail}
-                onChange={e => setUserData({ ...userData, billingEmail: e.target.value })}
+                value={userData?.email}
+                onChange={e => setUserData({ ...userData, email: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -140,8 +155,8 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
                 fullWidth
                 label='Tax ID'
                 placeholder='Tax-7490'
-                value={userData?.taxId}
-                onChange={e => setUserData({ ...userData, taxId: e.target.value })}
+                value={userData?.taxID}
+                onChange={e => setUserData({ ...userData, taxID: e.target.value })}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -156,7 +171,7 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Language</InputLabel>
-                <Select
+                {/* <Select
                   label='Language'
                   multiple
                   value={userData?.language?.map(lang => lang.toLowerCase().replace(/\s+/g, '-')) || []}
@@ -174,7 +189,7 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
                       {language}
                     </MenuItem>
                   ))}
-                </Select>
+                </Select> */}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -202,7 +217,7 @@ const EditUserInfo = ({ open, setOpen, data }: EditUserInfoProps) => {
           </Grid>
         </DialogContent>
         <DialogActions className='justify-center pbs-0 sm:pbe-16 sm:pli-16'>
-          <Button variant='contained' onClick={handleClose} type='submit'>
+          <Button variant='contained' type='submit'>
             Submit
           </Button>
           <Button variant='outlined' color='secondary' type='reset' onClick={handleClose}>

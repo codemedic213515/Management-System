@@ -23,7 +23,7 @@ import defaultData from './data'
 const columnHelper = createColumnHelper<DataType>()
 
 const defaultColumns = [
-  columnHelper.accessor('fullName', {
+  columnHelper.accessor('name', {
     cell: info => info.getValue(),
     header: 'Name'
   }),

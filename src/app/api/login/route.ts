@@ -1,39 +1,66 @@
-// Next Imports
 import { NextResponse } from 'next/server'
-
-import type { UserTable } from './users'
-
-type ResponseUser = Omit<UserTable, 'password'>
-
-// Mock data for demo purpose
-import { users } from './users'
+import mysql from 'mysql2/promise'
 
 export async function POST(req: Request) {
-  // Vars
   const { email, password } = await req.json()
-  const user = users.find(u => u.email === email && u.password === password)
-  let response: null | ResponseUser = null
+  console.log('email')
 
-  if (user) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...filteredUserData } = user
+  // Create a MySQL connection
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+  })
 
-    response = {
-      ...filteredUserData
+  try {
+    // Query the database for user credentials and status
+    const [rows] = await connection.execute(
+      'SELECT id, name, email, image, status, suspend FROM User WHERE email = ? AND password = ?',
+      [email, password]
+    )
+
+    if (Array.isArray(rows) && rows.length > 0) {
+      const user = rows[0] as any
+
+      // Check if the user's status is suspended
+      if (user.suspend === 'true') {
+        return NextResponse.json(
+          {
+            message: ['Your account is suspended. Please contact support.']
+          },
+          {
+            status: 403, // Forbidden
+            statusText: 'Account Suspended'
+          }
+        )
+      }
+
+      // If login is successful
+      return NextResponse.json(user)
+    } else {
+      return NextResponse.json(
+        {
+          message: ['Email or Password is invalid']
+        },
+        {
+          status: 401,
+          statusText: 'Unauthorized Access'
+        }
+      )
     }
-
-    return NextResponse.json(response)
-  } else {
-    // We return 401 status code and error message if user is not found
+  } catch (error) {
+    console.error('Database error:', error)
     return NextResponse.json(
       {
-        // We create object here to separate each error message for each field in case of multiple errors
-        message: ['Email or Password is invalid']
+        message: ['An error occurred while processing your request']
       },
       {
-        status: 401,
-        statusText: 'Unauthorized Access'
+        status: 500,
+        statusText: 'Internal Server Error'
       }
     )
+  } finally {
+    await connection.end()
   }
 }

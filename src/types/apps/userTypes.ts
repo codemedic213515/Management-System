@@ -12,6 +12,9 @@ export type UsersType = {
   contact: string
   fullName: string
   username: string
-  currentPlan: string
+  currentplan: string
   avatarColor?: ThemeColor
+  password: string
+  taxID: number
+  language: string
 }

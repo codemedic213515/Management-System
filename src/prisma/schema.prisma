@@ -1,48 +1,59 @@
+// schema.prisma
+
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "mysql" // or "postgresql", depending on your database
+  url      = env("DATABASE_URL") // Your database connection string
 }
 
 generator client {
-  provider        = "prisma-client-js"
-  binaryTargets   = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-1.1.x", "rhel-openssl-3.0.x"]
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  password     String
+  avatar       String?
+  company      String?
+  role         String?
+  username     String?
+  country      String?
+  contact      String?
+  currentplan  String?
+  status       String?
+  avatarColor  String?
+  taxID       Int?
+  language     String?
+  suspend      Boolean   @default(false) // Changed to Boolean type
+  accounts     Account[]
+  sessions     Session[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
+  id                 Int    @id @default(autoincrement())
+  userId             Int
   type               String
   provider           String
   providerAccountId  String
   refresh_token      String?
   access_token       String?
-  expires_at         Int?
+  expires_at        Int?
   token_type         String?
   scope              String?
   id_token           String?
   session_state      String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id
   sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+  userId      Int
+  expires     DateTime
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model VerificationToken {
